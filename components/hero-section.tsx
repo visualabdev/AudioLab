@@ -5,6 +5,12 @@ import { Play, ArrowRight, Sparkles, Zap, Music, Disc3, Piano } from "lucide-rea
 import Link from "next/link"
 import { useEffect, useState } from "react"
 
+// Deterministic pseudo-random function for consistent server/client values
+function seededRandom(seed: number) {
+  const x = Math.sin(seed) * 10000
+  return x - Math.floor(x)
+}
+
 export function HeroSection() {
   const [mounted, setMounted] = useState(false)
 
@@ -15,13 +21,17 @@ export function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       <div className="absolute inset-0 w-full h-full">
-        <iframe
-          src="https://my.spline.design/blobs-VwWw1Ss59p4zyTan5CboFSJA/"
-          frameBorder="0"
-          width="100%"
-          height="100%"
-          className="spline-embed"
-        />
+        {/* Custom animated background to replace Spline */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Animated gradient blobs */}
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-primary/20 via-secondary/15 to-primary/20 rounded-full blur-3xl animate-blob"></div>
+          <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-gradient-to-r from-secondary/20 via-primary/15 to-secondary/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-gradient-to-r from-primary/15 via-secondary/20 to-primary/15 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+
+          {/* Additional floating orbs */}
+          <div className="absolute top-1/6 right-1/3 w-64 h-64 bg-gradient-to-r from-secondary/10 to-primary/10 rounded-full blur-2xl animate-blob animation-delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/6 w-56 h-56 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full blur-2xl animate-blob animation-delay-3000"></div>
+        </div>
       </div>
 
       {/* Dark overlay to ensure text readability */}
@@ -37,10 +47,10 @@ export function HeroSection() {
             key={i}
             className="absolute w-1 h-1 bg-primary/30 rounded-full animate-float"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${5 + Math.random() * 5}s`,
+              left: `${seededRandom(i * 1000 + 1) * 100}%`,
+              top: `${seededRandom(i * 1000 + 2) * 100}%`,
+              animationDelay: `${seededRandom(i * 1000 + 3) * 5}s`,
+              animationDuration: `${5 + seededRandom(i * 1000 + 4) * 5}s`,
             }}
           />
         ))}

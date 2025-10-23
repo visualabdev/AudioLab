@@ -1,4 +1,3 @@
-"use client"
 import { TrackDetailClient } from "@/components/track-detail-client"
 
 export default async function TrackDetailPage({ params }: { params: Promise<{ id: string }> }) {
