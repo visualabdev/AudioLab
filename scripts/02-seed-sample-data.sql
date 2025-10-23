@@ -1,0 +1,87 @@
+-- Insert sample tracks
+INSERT INTO tracks (title, artist, genre, bpm, key, price, description, audio_url, cover_image_url, duration, tags, is_featured)
+VALUES 
+  (
+    'Midnight Dreams',
+    'AudioLab',
+    'Hip Hop',
+    140,
+    'C Minor',
+    29.99,
+    'Dark atmospheric hip hop beat with heavy 808s and melodic piano',
+    '/audio/sample-1.mp3',
+    '/placeholder.svg?height=400&width=400',
+    180,
+    ARRAY['dark', 'atmospheric', 'piano', '808'],
+    true
+  ),
+  (
+    'Summer Vibes',
+    'AudioLab',
+    'Pop',
+    120,
+    'G Major',
+    24.99,
+    'Uplifting pop instrumental with catchy melodies and bright synths',
+    '/audio/sample-2.mp3',
+    '/placeholder.svg?height=400&width=400',
+    200,
+    ARRAY['uplifting', 'bright', 'catchy', 'synth'],
+    true
+  ),
+  (
+    'Trap Energy',
+    'AudioLab',
+    'Trap',
+    150,
+    'D Minor',
+    34.99,
+    'High energy trap beat with hard hitting drums and aggressive synths',
+    '/audio/sample-3.mp3',
+    '/placeholder.svg?height=400&width=400',
+    165,
+    ARRAY['energetic', 'hard', 'aggressive', 'drums'],
+    false
+  ),
+  (
+    'Lo-Fi Study',
+    'AudioLab',
+    'Lo-Fi',
+    85,
+    'A Minor',
+    19.99,
+    'Chill lo-fi beat perfect for studying or relaxing',
+    '/audio/sample-4.mp3',
+    '/placeholder.svg?height=400&width=400',
+    220,
+    ARRAY['chill', 'relaxing', 'study', 'ambient'],
+    false
+  ),
+  (
+    'Electronic Dreams',
+    'AudioLab',
+    'Electronic',
+    128,
+    'E Minor',
+    27.99,
+    'Futuristic electronic track with pulsing synths and driving bassline',
+    '/audio/sample-5.mp3',
+    '/placeholder.svg?height=400&width=400',
+    195,
+    ARRAY['futuristic', 'synth', 'bass', 'electronic'],
+    true
+  ),
+  (
+    'R&B Smooth',
+    'AudioLab',
+    'R&B',
+    95,
+    'F Major',
+    29.99,
+    'Smooth R&B instrumental with soulful keys and groovy bass',
+    '/audio/sample-6.mp3',
+    '/placeholder.svg?height=400&width=400',
+    210,
+    ARRAY['smooth', 'soulful', 'groovy', 'keys'],
+    false
+  );
