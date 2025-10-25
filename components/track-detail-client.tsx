@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { AudioPlayer } from "@/components/audio-player"
-import { mockTracks } from "@/lib/mock-data"
+import { useTracksStore } from "@/lib/tracks-store"
 import { Play, ShoppingCart, Music, Clock, Zap, Download, Shield } from "lucide-react"
 import Image from "next/image"
 import { notFound } from "next/navigation"
@@ -15,7 +15,8 @@ import { useCartStore } from "@/lib/cart-store"
 import Link from "next/link"
 
 export function TrackDetailClient({ id }: { id: string }) {
-  const track = mockTracks.find((t) => t.id === id)
+  const { getTrackById, tracks } = useTracksStore()
+  const track = getTrackById(id)
   const [currentTrack, setCurrentTrack] = useState(track || null)
   const { addItem } = useCartStore()
 
@@ -157,7 +158,7 @@ export function TrackDetailClient({ id }: { id: string }) {
           <div className="space-y-6">
             <h2 className="text-3xl font-bold">Similar Tracks</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {mockTracks
+              {tracks
                 .filter((t) => t.id !== track.id && t.genre === track.genre)
                 .slice(0, 3)
                 .map((similarTrack) => (

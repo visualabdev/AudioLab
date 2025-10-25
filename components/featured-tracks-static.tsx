@@ -1,29 +1,59 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Play, Pause, ShoppingCart, Clock, Music, TrendingUp, ArrowRight } from "lucide-react"
+import { Play, ShoppingCart, Clock, Music, TrendingUp, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useTracksStore } from "@/lib/tracks-store"
-import { useCartStore } from "@/lib/cart-store"
-import { usePlayerStore } from "@/lib/player-store"
-import { toast } from "@/lib/toast"
 
-export function FeaturedTracks() {
-  const [isClient, setIsClient] = useState(false)
-  const { getFeaturedTracks } = useTracksStore()
-  const { addItem } = useCartStore()
-  const { currentTrack, isPlaying, playTrack, pauseTrack } = usePlayerStore()
-  
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-  
-  const featuredTracks = getFeaturedTracks()
+// Static data to avoid hydration issues
+const staticFeaturedTracks = [
+  {
+    id: "1",
+    title: "Midnight Dreams",
+    artist: "AudioLab",
+    genre: "Hip Hop",
+    bpm: 140,
+    key: "C Minor",
+    price: 29.99,
+    description: "Dark and atmospheric hip hop beat with haunting melodies",
+    is_featured: true,
+    category: "beat",
+    cover_image_url: "/placeholder.svg",
+    duration: 180
+  },
+  {
+    id: "2",
+    title: "Summer Vibes",
+    artist: "AudioLab",
+    genre: "Pop",
+    bpm: 120,
+    key: "G Major",
+    price: 24.99,
+    description: "Uplifting pop beat perfect for summer anthems",
+    is_featured: true,
+    category: "beat",
+    cover_image_url: "/placeholder.svg",
+    duration: 195
+  },
+  {
+    id: "4",
+    title: "Trap Energy",
+    artist: "AudioLab",
+    genre: "Trap",
+    bpm: 150,
+    key: "F# Minor",
+    price: 34.99,
+    description: "High-energy trap beat with heavy 808s",
+    is_featured: true,
+    category: "beat",
+    cover_image_url: "/placeholder.svg",
+    duration: 210
+  }
+]
 
+export function FeaturedTracksStatic() {
   const formatDuration = (seconds: number | null) => {
     if (!seconds) return "0:00"
     const mins = Math.floor(seconds / 60)
@@ -32,40 +62,17 @@ export function FeaturedTracks() {
   }
 
   const handlePlay = (track: any) => {
-    if (!isClient) return
-    
-    if (currentTrack?.id === track.id && isPlaying) {
-      pauseTrack()
-      toast.info(`Pausado: ${track.title}`)
-    } else {
-      playTrack(track)
-      toast.success(`Reproduciendo: ${track.title}`)
-    }
+    console.log('Playing track:', track.title)
+    // This will be handled by the hydrated version
   }
 
-  const handleAddToCart = (track: any, e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    
-    if (!isClient) return
-    
-    addItem({
-      id: track.id,
-      title: track.title,
-      artist: track.artist,
-      price: track.price,
-      category: track.category as 'beats' | 'samples' | 'midis',
-      image: track.cover_image_url,
-      license: 'basic'
-    })
-    
-    toast.success(`${track.title} agregado al carrito`)
+  const handleAddToCart = (track: any) => {
+    console.log('Adding to cart:', track.title)
+    // This will be handled by the hydrated version
   }
-
-
 
   return (
-    <section id="featured" className="py-32 relative" suppressHydrationWarning>
+    <section id="featured" className="py-32 relative">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
 
@@ -86,12 +93,11 @@ export function FeaturedTracks() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" suppressHydrationWarning>
-          {featuredTracks.map((track, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {staticFeaturedTracks.map((track, index) => (
             <Card
               key={track.id}
               className="group overflow-hidden glass-card border-border/50 hover:border-primary/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2"
-              suppressHydrationWarning
             >
                 <div className="relative aspect-square overflow-hidden">
                   <Image
@@ -107,17 +113,9 @@ export function FeaturedTracks() {
                     <Button
                       size="icon"
                       className="h-20 w-20 rounded-full bg-gradient-to-br from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-2xl shadow-primary/50 animate-pulse-glow"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handlePlay(track)
-                      }}
+                      onClick={() => handlePlay(track)}
                     >
-                      {isClient && currentTrack?.id === track.id && isPlaying ? (
-                        <Pause className="h-10 w-10 fill-white" />
-                      ) : (
-                        <Play className="h-10 w-10 fill-white" />
-                      )}
+                      <Play className="h-10 w-10 fill-white" />
                     </Button>
                   </div>
 
@@ -165,7 +163,7 @@ export function FeaturedTracks() {
                     </div>
                     <Button
                       className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-lg shadow-primary/30 font-semibold"
-                      onClick={(e) => handleAddToCart(track, e)}
+                      onClick={() => handleAddToCart(track)}
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
                       Agregar
@@ -190,8 +188,6 @@ export function FeaturedTracks() {
           </Button>
         </div>
       </div>
-
-
     </section>
   )
 }

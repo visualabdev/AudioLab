@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Plus, Edit, Trash2, Music, DollarSign, Upload, Save, Play, Pause } from "lucide-react"
+import { Plus, Edit, Trash2, Music, DollarSign, Upload, Save } from "lucide-react"
 import { useTracksStore } from "@/lib/tracks-store"
 import { BulkOperations } from "@/components/admin/bulk-operations"
+import { AudioStorage } from "@/lib/audio-storage"
 import Image from "next/image"
 import type { Track } from "@/lib/types"
 
@@ -93,7 +94,7 @@ export function AdminTracksTab({ category }: AdminTracksTabProps) {
     setIsAddDialogOpen(true)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     // Process cover image
@@ -102,10 +103,32 @@ export function AdminTracksTab({ category }: AdminTracksTabProps) {
       coverImageUrl = formData.coverPreview
     }
 
-    // Process audio file
-    let audioUrl = `/audio/${formData.title.toLowerCase().replace(/\s+/g, '-')}.${category === 'midi' ? 'mid' : 'mp3'}`
+    // Process audio file - REQUERIDO
+    if (!formData.audioFile && !editingTrack) {
+      alert('⚠️ Debes seleccionar un archivo de audio')
+      return
+    }
+    
+    let audioUrl = editingTrack?.audio_url || ''
+    
     if (formData.audioFile) {
-      audioUrl = URL.createObjectURL(formData.audioFile)
+      // Generate unique ID for the audio file
+      const audioId = `${Date.now()}-${formData.title.toLowerCase().replace(/\s+/g, '-')}`
+      console.log('📤 Subiendo archivo de audio:', {
+        nombre: formData.audioFile.name,
+        tipo: formData.audioFile.type,
+        tamaño: `${(formData.audioFile.size / 1024 / 1024).toFixed(2)} MB`,
+        id: audioId
+      })
+      
+      try {
+        audioUrl = await AudioStorage.storeAudioFile(audioId, formData.audioFile)
+        console.log('✅ Archivo almacenado exitosamente:', audioUrl)
+      } catch (error) {
+        console.error('❌ Error almacenando archivo:', error)
+        audioUrl = URL.createObjectURL(formData.audioFile)
+        console.warn('⚠️ Usando blob URL como fallback:', audioUrl)
+      }
     }
 
     // Process tags
@@ -122,7 +145,7 @@ export function AdminTracksTab({ category }: AdminTracksTabProps) {
       tags: tags.length > 0 ? tags : undefined,
       is_featured: formData.is_featured,
       exclusive: formData.exclusive,
-      license: formData.license,
+      license: formData.license as "basic" | "premium" | "exclusive",
       category: category,
       cover_image_url: coverImageUrl,
       audio_url: audioUrl,
@@ -248,8 +271,11 @@ export function AdminTracksTab({ category }: AdminTracksTabProps) {
               {/* Audio File Upload */}
               <div className="space-y-4">
                 <Label className="text-base font-semibold">
-                  Archivo de Audio {category === 'midi' ? '(MIDI)' : '(MP3/WAV)'}
+                  Archivo de Audio {category === 'midi' ? '(MIDI)' : '(MP3/WAV)'} *
                 </Label>
+                {!editingTrack && !formData.audioFile && (
+                  <p className="text-sm text-red-500">⚠️ Debes seleccionar un archivo de audio para continuar</p>
+                )}
                 <div className="space-y-3">
                   <Input
                     type="file"
@@ -467,8 +493,8 @@ export function AdminTracksTab({ category }: AdminTracksTabProps) {
               <div className="flex gap-3 pt-6 border-t">
                 <Button
                   type="submit"
-                  className={`flex-1 bg-gradient-to-r ${getCategoryColor(category)} hover:opacity-90 text-white border-0 h-12`}
-                  disabled={!formData.title || !formData.price}
+                  className={`flex-1 bg-gradient-to-r ${getCategoryColor()} hover:opacity-90 text-white border-0 h-12`}
+                  disabled={!formData.title || !formData.price || (!formData.audioFile && !editingTrack)}
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {editingTrack ? `Actualizar ${getCategoryName().slice(0, -1)}` : `Agregar ${getCategoryName().slice(0, -1)}`}
@@ -501,7 +527,7 @@ export function AdminTracksTab({ category }: AdminTracksTabProps) {
             <p className="text-sm text-muted-foreground mb-4">Comienza agregando tu primer {category} al catálogo</p>
             <Button
               onClick={() => setIsAddDialogOpen(true)}
-              className={`bg-gradient-to-r ${getCategoryColor(category)} hover:opacity-90 text-white border-0`}
+              className={`bg-gradient-to-r ${getCategoryColor()} hover:opacity-90 text-white border-0`}
             >
               <Plus className="h-4 w-4 mr-2" />
               Agregar {getCategoryName().slice(0, -1)}

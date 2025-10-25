@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { TrackFilters, type FilterState } from "@/components/track-filters"
@@ -11,6 +11,7 @@ import type { Track } from "@/lib/types"
 import { Music2, AudioWaveform as Waveform } from "lucide-react"
 
 export default function SamplesPage() {
+  const [isClient, setIsClient] = useState(false)
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     genre: "all",
@@ -21,11 +22,15 @@ export default function SamplesPage() {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
 
   const { getTracksByCategory } = useTracksStore()
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
   
   // Filter only samples
   const sampleTracks = useMemo(() => {
-    return getTracksByCategory("sample")
-  }, [getTracksByCategory])
+    return isClient ? getTracksByCategory("sample") : []
+  }, [getTracksByCategory, isClient])
 
   const filteredTracks = useMemo(() => {
     let tracks = [...sampleTracks]

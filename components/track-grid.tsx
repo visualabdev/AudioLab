@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -15,10 +16,17 @@ interface TrackGridProps {
 }
 
 export function TrackGrid({ tracks }: TrackGridProps) {
+  const [isClient, setIsClient] = useState(false)
   const { addItem } = useCartStore()
   const { currentTrack, isPlaying, playTrack, pauseTrack } = usePlayerStore()
 
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   const handlePlay = (track: Track) => {
+    if (!isClient) return
+    
     if (currentTrack?.id === track.id && isPlaying) {
       pauseTrack()
     } else {
@@ -27,6 +35,8 @@ export function TrackGrid({ tracks }: TrackGridProps) {
   }
 
   const handleAddToCart = (track: Track) => {
+    if (!isClient) return
+    
     addItem({
       id: track.id,
       title: track.title,
@@ -40,6 +50,7 @@ export function TrackGrid({ tracks }: TrackGridProps) {
   }
 
   const handleFavorite = (track: Track) => {
+    if (!isClient) return
     toast.success(`${track.title} agregado a favoritos`)
   }
 
@@ -69,6 +80,29 @@ export function TrackGrid({ tracks }: TrackGridProps) {
     }
   }
 
+  if (!isClient) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Skeleton loading */}
+        {Array.from({ length: 8 }).map((_, i) => (
+          <Card key={i} className="glass-card border-primary/20 shadow-xl">
+            <CardContent className="p-0">
+              <div className="aspect-square bg-muted animate-pulse rounded-t-lg" />
+              <div className="p-6 space-y-4">
+                <div className="h-4 bg-muted animate-pulse rounded" />
+                <div className="h-3 bg-muted animate-pulse rounded w-2/3" />
+                <div className="flex gap-2">
+                  <div className="h-6 bg-muted animate-pulse rounded w-16" />
+                  <div className="h-6 bg-muted animate-pulse rounded w-12" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
   if (tracks.length === 0) {
     return (
       <div className="text-center py-16">
@@ -82,7 +116,7 @@ export function TrackGrid({ tracks }: TrackGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" suppressHydrationWarning>
       {tracks.map((track) => (
         <Card key={track.id} className="glass-card border-primary/20 shadow-xl hover:shadow-2xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 group">
           <CardContent className="p-0">
@@ -102,7 +136,7 @@ export function TrackGrid({ tracks }: TrackGridProps) {
                   className={`w-16 h-16 rounded-full bg-gradient-to-r ${getCategoryColor(track.category)} hover:scale-110 transition-transform shadow-lg`}
                   onClick={() => handlePlay(track)}
                 >
-                  {currentTrack?.id === track.id && isPlaying ? (
+                  {isClient && currentTrack?.id === track.id && isPlaying ? (
                     <Pause className="h-8 w-8 text-white" />
                   ) : (
                     <Play className="h-8 w-8 text-white ml-1" />

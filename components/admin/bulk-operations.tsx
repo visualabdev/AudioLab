@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useTracksStore } from '@/lib/tracks-store'
+import { AudioStorage } from '@/lib/audio-storage'
 import { toast } from '@/lib/toast'
 
 interface BulkUploadFile {
@@ -104,8 +105,16 @@ export function BulkOperations() {
         // Simulate file processing
         await new Promise(resolve => setTimeout(resolve, 1000))
         
-        // Create audio URL
-        const audioUrl = URL.createObjectURL(file.file)
+        // Store audio file persistently
+        const audioId = `${Date.now()}-${i}-${file.title.toLowerCase().replace(/\s+/g, '-')}`
+        let audioUrl: string
+        
+        try {
+          audioUrl = await AudioStorage.storeAudioFile(audioId, file.file)
+        } catch (error) {
+          console.error('Error storing audio file:', error)
+          audioUrl = URL.createObjectURL(file.file)
+        }
         
         // Add track to store
         addTrack({
@@ -116,7 +125,7 @@ export function BulkOperations() {
           key: file.key,
           price: file.price,
           category: file.category,
-          audio_file_url: audioUrl,
+          audio_url: audioUrl,
           cover_image_url: '/placeholder.svg',
           description: `${file.category} en ${file.key} a ${file.bpm} BPM`,
           tags: [file.genre, file.category, `${file.bpm}bpm`],

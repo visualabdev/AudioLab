@@ -14,7 +14,9 @@ import { AdminTracksTab } from '@/components/admin/tracks-tab'
 import { AdminPurchasesTab } from '@/components/admin/purchases-tab'
 import { AnalyticsTab } from '@/components/admin/analytics-tab'
 import { AdminContentTab } from '@/components/admin/content-tab'
-import { Save, RotateCcw, Upload, BarChart3, Music, ShoppingCart, Settings, Palette, ArrowLeft, FileText } from 'lucide-react'
+import { useTracksStore } from '@/lib/tracks-store'
+import { usePlayerStore } from '@/lib/player-store'
+import { Save, RotateCcw, Upload, BarChart3, Music, ShoppingCart, Settings, Palette, ArrowLeft, FileText, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
 const iconOptions = [
@@ -36,6 +38,8 @@ const colorPresets = [
 
 export default function AdminPage() {
   const { config, updateConfig, resetConfig } = useConfigStore()
+  const { clearAllData } = useTracksStore()
+  const { stopTrack } = usePlayerStore()
   const [tempConfig, setTempConfig] = useState(config)
   const [activeTab, setActiveTab] = useState('analytics')
 
@@ -55,6 +59,14 @@ export default function AdminPage() {
     resetConfig()
     setTempConfig(config)
     alert('Configuración restablecida a valores por defecto!')
+  }
+
+  const handleClearAllData = () => {
+    if (confirm('¿Estás seguro de que quieres eliminar TODOS los tracks y datos? Esta acción no se puede deshacer.')) {
+      stopTrack() // Stop any playing audio
+      clearAllData() // Clear all tracks and localStorage
+      alert('Todos los datos han sido eliminados. Ahora puedes subir contenido nuevo.')
+    }
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -390,7 +402,17 @@ export default function AdminPage() {
             <h1 className="text-5xl font-black mb-2 animate-gradient-text">Panel de Administración</h1>
             <p className="text-muted-foreground text-lg">Gestiona tu tienda de beats y personaliza tu sitio</p>
           </div>
-          <div className="w-32"></div> {/* Spacer for centering */}
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handleClearAllData}
+              variant="outline"
+              size="sm"
+              className="border-red-500/50 text-red-500 hover:bg-red-500/10 hover:border-red-500"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Limpiar Datos
+            </Button>
+          </div>
         </div>
 
         {/* Modern Card Navigation */}

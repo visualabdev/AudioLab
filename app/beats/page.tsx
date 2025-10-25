@@ -1,13 +1,19 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { TrackGrid } from "@/components/track-grid"
 import { useTracksStore } from "@/lib/tracks-store"
 
-"use client"
-
 export default function BeatsPage() {
+  const [isClient, setIsClient] = useState(false)
   const { getTracksByCategory } = useTracksStore()
   const beats = getTracksByCategory("beat")
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   return (
     <div className="min-h-screen">
@@ -20,7 +26,7 @@ export default function BeatsPage() {
               Descubre nuestra colección de beats profesionales listos para tus proyectos musicales
             </p>
           </div>
-          <TrackGrid tracks={beats} />
+          <TrackGrid tracks={isClient ? beats : []} />
         </div>
       </main>
       <Footer />

@@ -1,6 +1,6 @@
 import { Header } from "@/components/header"
 import { HeroSection } from "@/components/hero-section"
-import { FeaturedTracks } from "@/components/featured-tracks"
+import { FeaturedTracksNew } from "@/components/featured-tracks-new"
 import { Footer } from "@/components/footer"
 
 export default function HomePage() {
@@ -9,7 +9,7 @@ export default function HomePage() {
       <Header />
       <main>
         <HeroSection />
-        <FeaturedTracks />
+        <FeaturedTracksNew />
       </main>
       <Footer />
     </div>
