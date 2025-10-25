@@ -8,8 +8,12 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ColorPicker } from '@/components/ui/color-picker'
 import { DynamicLogo } from '@/components/dynamic-logo'
-import { Save, RotateCcw, Upload } from 'lucide-react'
+import { AdminTracksTab } from '@/components/admin/tracks-tab'
+import { AdminPurchasesTab } from '@/components/admin/purchases-tab'
+import { AdminAnalyticsTab } from '@/components/admin/analytics-tab'
+import { Save, RotateCcw, Upload, BarChart3, Music, ShoppingCart, Settings, Palette } from 'lucide-react'
 
 const iconOptions = [
   { value: 'Music2', label: 'Music Note' },
@@ -21,16 +25,17 @@ const iconOptions = [
 ]
 
 const colorPresets = [
-  { name: 'Purple & Cyan (Default)', primary: 'oklch(0.646 0.222 286.75)', secondary: 'oklch(0.696 0.17 197.137)' },
-  { name: 'Blue & Green', primary: 'oklch(0.6 0.25 240)', secondary: 'oklch(0.7 0.2 150)' },
-  { name: 'Red & Orange', primary: 'oklch(0.6 0.25 20)', secondary: 'oklch(0.7 0.2 60)' },
-  { name: 'Pink & Purple', primary: 'oklch(0.65 0.25 320)', secondary: 'oklch(0.7 0.2 280)' },
-  { name: 'Teal & Blue', primary: 'oklch(0.6 0.2 180)', secondary: 'oklch(0.65 0.25 220)' }
+  { name: 'Purple & Cyan (Default)', primary: '#8b5cf6', secondary: '#06b6d4' },
+  { name: 'Blue & Green', primary: '#3b82f6', secondary: '#10b981' },
+  { name: 'Red & Orange', primary: '#ef4444', secondary: '#f97316' },
+  { name: 'Pink & Purple', primary: '#ec4899', secondary: '#a855f7' },
+  { name: 'Teal & Blue', primary: '#14b8a6', secondary: '#3b82f6' }
 ]
 
 export default function AdminPage() {
   const { config, updateConfig, resetConfig } = useConfigStore()
   const [tempConfig, setTempConfig] = useState(config)
+  const [activeTab, setActiveTab] = useState('analytics')
 
   const handleSave = () => {
     updateConfig(tempConfig)
@@ -69,40 +74,73 @@ export default function AdminPage() {
     })
   }
 
-  return (
-    <div className="min-h-screen bg-background pt-32 pb-16">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">Panel de Administración</h1>
-          <p className="text-muted-foreground">Personaliza el logo y los colores de tu sitio</p>
-        </div>
+  const convertHexToOklch = (hex: string): string => {
+    const colorMap: { [key: string]: string } = {
+      '#8b5cf6': 'oklch(0.646 0.222 286.75)',
+      '#06b6d4': 'oklch(0.696 0.17 197.137)',
+      '#3b82f6': 'oklch(0.6 0.25 240)',
+      '#10b981': 'oklch(0.7 0.2 150)',
+      '#ef4444': 'oklch(0.6 0.25 20)',
+      '#f97316': 'oklch(0.7 0.2 60)',
+      '#ec4899': 'oklch(0.65 0.25 320)',
+      '#a855f7': 'oklch(0.7 0.2 280)',
+      '#14b8a6': 'oklch(0.6 0.2 180)'
+    }
+    return colorMap[hex] || hex
+  }
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Preview */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Vista Previa</CardTitle>
-              <CardDescription>Así se verá tu logo con la configuración actual</CardDescription>
-            </CardHeader>
-            <CardContent className="flex items-center justify-center p-8">
-              <DynamicLogo />
-            </CardContent>
-          </Card>
+  const tabs = [
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'beats', label: 'Beats', icon: Music },
+    { id: 'samples', label: 'Samples', icon: Music },
+    { id: 'midis', label: 'MIDIs', icon: Music },
+    { id: 'purchases', label: 'Compras', icon: ShoppingCart },
+    { id: 'customization', label: 'Personalización', icon: Palette }
+  ]
 
-          {/* Configuration */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuración</CardTitle>
-              <CardDescription>Personaliza el logo y los colores</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="logo" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="logo">Logo</TabsTrigger>
-                  <TabsTrigger value="colors">Colores</TabsTrigger>
-                </TabsList>
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'analytics':
+        return <AdminAnalyticsTab />
+      case 'beats':
+        return <AdminTracksTab category="beat" />
+      case 'samples':
+        return <AdminTracksTab category="sample" />
+      case 'midis':
+        return <AdminTracksTab category="midi" />
+      case 'purchases':
+        return <AdminPurchasesTab />
+      case 'customization':
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Preview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Vista Previa
+                </CardTitle>
+                <CardDescription>Así se verá tu logo con la configuración actual</CardDescription>
+              </CardHeader>
+              <CardContent className="flex items-center justify-center p-8">
+                <DynamicLogo />
+              </CardContent>
+            </Card>
 
-                <TabsContent value="logo" className="space-y-4">
+            {/* Configuration */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="h-5 w-5" />
+                  Configuración
+                </CardTitle>
+                <CardDescription>Personaliza el logo y los colores de tu sitio</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Logo Configuration */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-lg">Configuración del Logo</h4>
+
                   <div className="space-y-2">
                     <Label htmlFor="logo-text">Texto del Logo</Label>
                     <Input
@@ -141,7 +179,7 @@ export default function AdminPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="icon">Icono</SelectItem>
-                        <SelectItem value="image">Imagen</SelectItem>
+                        <SelectItem value="image">Imagen Personalizada</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -172,7 +210,7 @@ export default function AdminPage() {
 
                   {tempConfig.logo.type === 'image' && (
                     <div className="space-y-2">
-                      <Label htmlFor="logo-upload">Subir Imagen</Label>
+                      <Label htmlFor="logo-upload">Subir Imagen del Logo</Label>
                       <div className="flex items-center gap-2">
                         <Input
                           id="logo-upload"
@@ -181,17 +219,29 @@ export default function AdminPage() {
                           onChange={handleImageUpload}
                           className="flex-1"
                         />
-                        <Button size="icon" variant="outline">
+                        <Button size="icon" variant="outline" onClick={() => document.getElementById('logo-upload')?.click()}>
                           <Upload className="h-4 w-4" />
                         </Button>
                       </div>
+                      {tempConfig.logo.imageUrl && (
+                        <div className="mt-2">
+                          <img
+                            src={tempConfig.logo.imageUrl}
+                            alt="Logo preview"
+                            className="w-16 h-16 object-cover rounded border"
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
-                </TabsContent>
+                </div>
 
-                <TabsContent value="colors" className="space-y-4">
+                {/* Color Configuration */}
+                <div className="space-y-4 border-t pt-6">
+                  <h4 className="font-medium text-lg">Configuración de Colores</h4>
+
                   <div className="space-y-4">
-                    <h4 className="font-medium">Presets de Colores</h4>
+                    <h5 className="font-medium">Presets de Colores</h5>
                     <div className="grid grid-cols-1 gap-2">
                       {colorPresets.map((preset, index) => (
                         <Button
@@ -202,13 +252,13 @@ export default function AdminPage() {
                         >
                           <div className="flex items-center gap-3">
                             <div className="flex gap-1">
-                              <div 
+                              <div
                                 className="w-4 h-4 rounded-full border"
-                                style={{ backgroundColor: `color(${preset.primary})` }}
+                                style={{ backgroundColor: preset.primary }}
                               />
-                              <div 
+                              <div
                                 className="w-4 h-4 rounded-full border"
-                                style={{ backgroundColor: `color(${preset.secondary})` }}
+                                style={{ backgroundColor: preset.secondary }}
                               />
                             </div>
                             <span className="text-sm">{preset.name}</span>
@@ -218,44 +268,77 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="primary-color">Color Primario</Label>
-                    <Input
-                      id="primary-color"
-                      value={tempConfig.colors.primary}
-                      onChange={(e) => setTempConfig({
-                        ...tempConfig,
-                        colors: { ...tempConfig.colors, primary: e.target.value }
-                      })}
-                    />
-                  </div>
+                  <ColorPicker
+                    label="Color Primario"
+                    value={tempConfig.colors.primary}
+                    onChange={(color) => setTempConfig({
+                      ...tempConfig,
+                      colors: { ...tempConfig.colors, primary: convertHexToOklch(color) }
+                    })}
+                  />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="secondary-color">Color Secundario</Label>
-                    <Input
-                      id="secondary-color"
-                      value={tempConfig.colors.secondary}
-                      onChange={(e) => setTempConfig({
-                        ...tempConfig,
-                        colors: { ...tempConfig.colors, secondary: e.target.value }
-                      })}
-                    />
-                  </div>
-                </TabsContent>
-              </Tabs>
+                  <ColorPicker
+                    label="Color Secundario"
+                    value={tempConfig.colors.secondary}
+                    onChange={(color) => setTempConfig({
+                      ...tempConfig,
+                      colors: { ...tempConfig.colors, secondary: convertHexToOklch(color) }
+                    })}
+                  />
+                </div>
 
-              <div className="flex gap-2 mt-6">
-                <Button onClick={handleSave} className="flex-1">
-                  <Save className="w-4 h-4 mr-2" />
-                  Guardar
-                </Button>
-                <Button onClick={handleReset} variant="outline">
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Restablecer
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="flex gap-2 mt-6">
+                  <Button onClick={handleSave} className="flex-1">
+                    <Save className="w-4 h-4 mr-2" />
+                    Guardar Cambios
+                  </Button>
+                  <Button onClick={handleReset} variant="outline">
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Restablecer
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )
+      default:
+        return <div>Sección no encontrada</div>
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-background pt-32 pb-16">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-2">Panel de Administración</h1>
+          <p className="text-muted-foreground">Gestiona tu tienda de beats y personaliza tu sitio</p>
+        </div>
+
+        {/* Custom Tab Navigation */}
+        <div className="mb-8">
+          <div className="flex flex-wrap gap-2 p-1 bg-muted rounded-lg">
+            {tabs.map((tab) => {
+              const Icon = tab.icon
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === tab.id
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {tab.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        <div className="space-y-6">
+          {renderTabContent()}
         </div>
       </div>
     </div>
