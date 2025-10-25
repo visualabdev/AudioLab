@@ -15,15 +15,15 @@ export default function CatalogPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [filters, setFilters] = useState<SearchFiltersType>({
     query: '',
-    category: '',
-    genre: '',
+    category: 'all',
+    genre: 'all',
     bpmRange: [60, 200],
     priceRange: [0, 100],
-    key: '',
+    key: 'all',
     tags: [],
     exclusive: false,
     featured: false,
-    license: '',
+    license: 'all',
     sortBy: 'newest',
     sortOrder: 'desc'
   })
@@ -47,12 +47,12 @@ export default function CatalogPage() {
     }
 
     // Category filter
-    if (filters.category) {
+    if (filters.category && filters.category !== 'all') {
       filtered = filtered.filter(track => track.category === filters.category)
     }
 
     // Genre filter
-    if (filters.genre) {
+    if (filters.genre && filters.genre !== 'all') {
       filtered = filtered.filter(track => track.genre.toLowerCase() === filters.genre)
     }
 
@@ -71,7 +71,7 @@ export default function CatalogPage() {
     }
 
     // Key filter
-    if (filters.key) {
+    if (filters.key && filters.key !== 'all') {
       filtered = filtered.filter(track => track.key === filters.key)
     }
 
@@ -93,7 +93,7 @@ export default function CatalogPage() {
     }
 
     // License filter
-    if (filters.license) {
+    if (filters.license && filters.license !== 'all') {
       filtered = filtered.filter(track => track.license === filters.license)
     }
 

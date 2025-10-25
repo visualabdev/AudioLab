@@ -11,18 +11,18 @@ import {
   Repeat, 
   Shuffle,
   Heart,
-  MoreHorizontal,
   ChevronUp,
-  List
+  Music,
+  X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { usePlayerStore } from '@/lib/player-store'
+import { AudioStorage } from '@/lib/audio-storage'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
-import { toast } from '@/lib/toast'
 
-export function GlobalPlayer() {
+export function GlobalPlayerNew() {
   const {
     currentTrack,
     isPlaying,
@@ -33,7 +33,6 @@ export function GlobalPlayer() {
     isLoading,
     repeatMode,
     isShuffled,
-    playTrack,
     pauseTrack,
     resumeTrack,
     nextTrack,
@@ -45,17 +44,22 @@ export function GlobalPlayer() {
     setCurrentTime,
     setIsLoading,
     toggleRepeat,
-    toggleShuffle
+    toggleShuffle,
+    stopTrack
   } = usePlayerStore()
 
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isClient, setIsClient] = useState(false)
 
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
-  // Real audio playback
+  // Audio management
   useEffect(() => {
     const audio = audioRef.current
-    if (!audio || !currentTrack) return
+    if (!audio || !currentTrack || !isClient) return
 
     const handleLoadedMetadata = () => {
       setDuration(audio.duration || 0)
@@ -77,22 +81,21 @@ export function GlobalPlayer() {
 
     const handleCanPlay = () => {
       setIsLoading(false)
-      if (isPlaying) {
-        audio.play().catch(console.error)
-      }
     }
 
     const handleError = (e: Event) => {
       setIsLoading(false)
-      console.error('Audio error:', e)
-      toast.error(`Error al cargar: ${currentTrack.title}`)
+      console.warn('⚠️ No se pudo cargar el audio:', currentTrack.audio_url)
+      console.info('💡 Solución: Usa el botón "Limpiar Datos" en /admin para eliminar archivos inválidos')
+      // Stop playing if there's an error
+      pauseTrack()
     }
 
     const handleLoadStart = () => {
       setIsLoading(true)
     }
 
-    // Add event listeners
+    // Add listeners
     audio.addEventListener('loadedmetadata', handleLoadedMetadata)
     audio.addEventListener('timeupdate', handleTimeUpdate)
     audio.addEventListener('ended', handleEnded)
@@ -100,14 +103,80 @@ export function GlobalPlayer() {
     audio.addEventListener('error', handleError)
     audio.addEventListener('loadstart', handleLoadStart)
 
-    // Load the track
+    // Load track with error handling
     if (currentTrack.audio_url) {
-      audio.src = currentTrack.audio_url
-      audio.load()
-      toast.info(`Cargando: ${currentTrack.title}`)
-    } else {
-      toast.error(`No hay audio disponible para: ${currentTrack.title}`)
-      setIsLoading(false)
+      try {
+        const audioUrl = currentTrack.audio_url
+        
+        console.log('🎵 Intentando cargar audio:', {
+          track: currentTrack.title,
+          url: audioUrl,
+          esCustomURL: AudioStorage.isCustomAudioURL(audioUrl)
+        })
+        
+        // Handle custom audio URLs
+        if (AudioStorage.isCustomAudioURL(audioUrl)) {
+          const audioId = AudioStorage.extractIdFromURL(audioUrl)
+          console.log('🔍 Recuperando archivo de IndexedDB:', audioId)
+          
+          if (audioId) {
+            AudioStorage.getAudioFile(audioId)
+              .then((blobUrl) => {
+                if (blobUrl) {
+                  console.log('✅ Archivo recuperado exitosamente:', blobUrl)
+                  audio.src = blobUrl
+                  audio.load()
+                } else {
+                  console.error('❌ No se pudo recuperar el archivo:', audioId)
+                  console.info('💡 Solución: Usa "Limpiar Datos" en /admin y vuelve a subir el archivo')
+                  setIsLoading(false)
+                  pauseTrack()
+                }
+              })
+              .catch((error) => {
+                console.error('❌ Error recuperando archivo:', error)
+                setIsLoading(false)
+                pauseTrack()
+              })
+          }
+          return
+        }
+        
+        // Validate audio file extension
+        const validExtensions = ['.mp3', '.wav', '.flac', '.ogg', '.m4a']
+        const isValidAudioFile = validExtensions.some(ext => 
+          audioUrl.toLowerCase().includes(ext)
+        ) || audioUrl.startsWith('blob:')
+        
+        if (!isValidAudioFile) {
+          console.warn('⚠️ Archivo no reproducible:', audioUrl)
+          console.info('💡 Los archivos MIDI no se pueden reproducir en navegadores')
+          setIsLoading(false)
+          pauseTrack()
+          return
+        }
+        
+        // Check if it's a blob URL and if it's still valid
+        if (audioUrl.startsWith('blob:')) {
+          fetch(audioUrl, { method: 'HEAD' })
+            .then(() => {
+              audio.src = audioUrl
+              audio.load()
+            })
+            .catch(() => {
+              console.error('Blob URL is no longer valid:', audioUrl)
+              setIsLoading(false)
+              pauseTrack()
+            })
+        } else {
+          audio.src = audioUrl
+          audio.load()
+        }
+      } catch (error) {
+        console.error('Error setting audio source:', error)
+        setIsLoading(false)
+        pauseTrack()
+      }
     }
 
     return () => {
@@ -118,44 +187,48 @@ export function GlobalPlayer() {
       audio.removeEventListener('error', handleError)
       audio.removeEventListener('loadstart', handleLoadStart)
     }
-  }, [currentTrack, repeatMode, nextTrack, setDuration, setCurrentTime, setIsLoading, isPlaying])
+  }, [currentTrack, isClient])
 
   // Play/pause control
   useEffect(() => {
     const audio = audioRef.current
-    if (!audio) return
+    if (!audio || !isClient || !currentTrack?.audio_url) return
 
     if (isPlaying) {
       audio.play().catch((error) => {
-        console.error('Play error:', error)
-        toast.error('Error al reproducir audio')
+        console.error('Error playing audio:', error)
+        pauseTrack()
+        setIsLoading(false)
       })
     } else {
       audio.pause()
     }
-  }, [isPlaying])
+  }, [isPlaying, isClient, currentTrack])
 
   // Volume control
   useEffect(() => {
     const audio = audioRef.current
-    if (!audio) return
+    if (!audio || !isClient) return
 
     audio.volume = isMuted ? 0 : volume
-  }, [volume, isMuted])
+  }, [volume, isMuted, isClient])
 
   // Seek control
   useEffect(() => {
     const audio = audioRef.current
-    if (!audio) return
+    if (!audio || !isClient) return
 
     if (Math.abs(audio.currentTime - currentTime) > 1) {
       audio.currentTime = currentTime
     }
-  }, [currentTime])
-
-
+  }, [currentTime, isClient])
 
   const handlePlayPause = () => {
+    if (!currentTrack?.audio_url) {
+      console.warn('No audio URL available')
+      return
+    }
+    
     if (isPlaying) {
       pauseTrack()
     } else {
@@ -181,18 +254,27 @@ export function GlobalPlayer() {
 
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0
 
-  if (!currentTrack) return null
+  if (!isClient || !currentTrack) return null
 
   return (
     <>
-      {/* Audio element */}
       <audio ref={audioRef} preload="metadata" />
       
-      {/* Player UI */}
       <div className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border shadow-2xl transition-all duration-300",
+        "fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border shadow-2xl transition-all duration-300",
         isExpanded ? "h-96" : "h-20"
-      )} suppressHydrationWarning>
+      )}>
+        {/* Progress Bar */}
+        <div className="absolute top-0 left-0 right-0">
+          <Slider
+            value={[progressPercentage]}
+            onValueChange={handleSeek}
+            max={100}
+            step={0.1}
+            className="w-full h-1"
+          />
+        </div>
+
         {/* Main Player Bar */}
         <div className="flex items-center justify-between px-4 py-3 h-20">
           {/* Track Info */}
@@ -207,7 +289,7 @@ export function GlobalPlayer() {
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                  <Play className="w-6 h-6 text-white" />
+                  <Music className="w-6 h-6 text-white" />
                 </div>
               )}
             </div>
@@ -262,9 +344,6 @@ export function GlobalPlayer() {
               className={cn(repeatMode !== 'none' && "text-primary")}
             >
               <Repeat className="w-4 h-4" />
-              {repeatMode === 'one' && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
-              )}
             </Button>
           </div>
 
@@ -287,6 +366,10 @@ export function GlobalPlayer() {
               />
             </div>
 
+            <div className="text-xs text-muted-foreground">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </div>
+
             <Button
               variant="ghost"
               size="sm"
@@ -294,91 +377,29 @@ export function GlobalPlayer() {
             >
               <ChevronUp className={cn("w-4 h-4 transition-transform", isExpanded && "rotate-180")} />
             </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={stopTrack}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-4 h-4" />
+            </Button>
           </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="absolute top-0 left-0 right-0">
-          <Slider
-            value={[progressPercentage]}
-            onValueChange={handleSeek}
-            max={100}
-            step={0.1}
-            className="w-full h-1 bg-transparent"
-          />
-        </div>
-
-        {/* Time Display */}
-        <div className="absolute top-1 left-4 right-4 flex justify-between text-xs text-muted-foreground pointer-events-none">
-          <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(duration)}</span>
         </div>
 
         {/* Expanded View */}
         {isExpanded && (
-          <div className="p-6 pt-2 h-76 overflow-y-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left: Track Details */}
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted">
-                    {currentTrack.cover_image_url ? (
-                      <Image
-                        src={currentTrack.cover_image_url}
-                        alt={currentTrack.title}
-                        width={80}
-                        height={80}
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                        <Play className="w-8 h-8 text-white" />
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-bold text-lg">{currentTrack.title}</h3>
-                    <p className="text-muted-foreground">{currentTrack.artist}</p>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                        {currentTrack.genre}
-                      </span>
-                      {currentTrack.bpm && (
-                        <span className="text-xs bg-muted px-2 py-1 rounded">
-                          {currentTrack.bpm} BPM
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {currentTrack.description && (
-                  <p className="text-sm text-muted-foreground">
-                    {currentTrack.description}
-                  </p>
-                )}
-              </div>
-
-              {/* Right: Queue */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold flex items-center">
-                    <List className="w-4 h-4 mr-2" />
-                    Cola de Reproducción
-                  </h4>
-                  <Button variant="ghost" size="sm">
-                    <MoreHorizontal className="w-4 h-4" />
-                  </Button>
-                </div>
-                
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  <div className="text-center py-8 text-muted-foreground">
-                    <List className="w-8 h-8 mx-auto mb-2" />
-                    <p className="text-sm">La cola de reproducción aparecerá aquí</p>
-                  </div>
-                </div>
-              </div>
+          <div className="p-6 pt-2 border-t border-border">
+            <div className="text-center">
+              <h3 className="font-bold text-lg mb-2">{currentTrack.title}</h3>
+              <p className="text-muted-foreground mb-4">{currentTrack.artist}</p>
+              {currentTrack.description && (
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  {currentTrack.description}
+                </p>
+              )}
             </div>
           </div>
         )}

@@ -1,16 +1,17 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { TrackFilters, type FilterState } from "@/components/track-filters"
 import { TrackCard } from "@/components/track-card"
 import { AudioPlayer } from "@/components/audio-player"
-import { mockTracks } from "@/lib/mock-data"
+import { useTracksStore } from "@/lib/tracks-store"
 import type { Track } from "@/lib/types"
 import { Music, FileMusic } from "lucide-react"
 
 export default function MidiPage() {
+  const [isClient, setIsClient] = useState(false)
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     genre: "all",
@@ -20,10 +21,16 @@ export default function MidiPage() {
   })
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
 
+  const { getTracksByCategory } = useTracksStore()
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+  
   // Filter only MIDI files
   const midiTracks = useMemo(() => {
-    return mockTracks.filter((track) => track.category === "midi")
-  }, [])
+    return isClient ? getTracksByCategory("midi") : []
+  }, [getTracksByCategory, isClient])
 
   const filteredTracks = useMemo(() => {
     let tracks = [...midiTracks]

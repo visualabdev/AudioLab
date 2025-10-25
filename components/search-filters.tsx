@@ -66,15 +66,15 @@ export function SearchFilters({ filters, onFiltersChange, className }: SearchFil
   const clearFilters = () => {
     onFiltersChange({
       query: '',
-      category: '',
-      genre: '',
+      category: 'all',
+      genre: 'all',
       bpmRange: [60, 200],
       priceRange: [0, 100],
-      key: '',
+      key: 'all',
       tags: [],
       exclusive: false,
       featured: false,
-      license: '',
+      license: 'all',
       sortBy: 'newest',
       sortOrder: 'desc'
     })
@@ -116,7 +116,7 @@ export function SearchFilters({ filters, onFiltersChange, className }: SearchFil
             <SelectValue placeholder="Categoría" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todas</SelectItem>
+            <SelectItem value="all">Todas</SelectItem>
             <SelectItem value="beats">Beats</SelectItem>
             <SelectItem value="samples">Samples</SelectItem>
             <SelectItem value="midis">MIDIs</SelectItem>
@@ -128,7 +128,7 @@ export function SearchFilters({ filters, onFiltersChange, className }: SearchFil
             <SelectValue placeholder="Género" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos</SelectItem>
+            <SelectItem value="all">Todos</SelectItem>
             {GENRES.map(genre => (
               <SelectItem key={genre} value={genre.toLowerCase()}>{genre}</SelectItem>
             ))}
@@ -199,7 +199,7 @@ export function SearchFilters({ filters, onFiltersChange, className }: SearchFil
                     <SelectValue placeholder="Seleccionar tonalidad" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todas</SelectItem>
+                    <SelectItem value="all">Todas</SelectItem>
                     {KEYS.map(key => (
                       <SelectItem key={key} value={key}>{key}</SelectItem>
                     ))}
@@ -215,7 +215,7 @@ export function SearchFilters({ filters, onFiltersChange, className }: SearchFil
                     <SelectValue placeholder="Seleccionar licencia" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todas</SelectItem>
+                    <SelectItem value="all">Todas</SelectItem>
                     {LICENSES.map(license => (
                       <SelectItem key={license.value} value={license.value}>{license.label}</SelectItem>
                     ))}
