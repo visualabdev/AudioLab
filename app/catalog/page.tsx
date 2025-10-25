@@ -1,14 +1,17 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { TrackGrid } from "@/components/track-grid"
-import { mockTracks } from "@/lib/mock-data"
+import { useTracksStore } from "@/lib/tracks-store"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Music, Disc3, Piano } from "lucide-react"
 
+"use client"
+
 export default function CatalogPage() {
-  const beats = mockTracks.filter(track => track.category === "beat")
-  const samples = mockTracks.filter(track => track.category === "sample")
-  const midis = mockTracks.filter(track => track.category === "midi")
+  const { tracks, getTracksByCategory } = useTracksStore()
+  const beats = getTracksByCategory("beat")
+  const samples = getTracksByCategory("sample")
+  const midis = getTracksByCategory("midi")
 
   return (
     <div className="min-h-screen">
@@ -26,7 +29,7 @@ export default function CatalogPage() {
             <TabsList className="grid w-full grid-cols-4 mb-8 max-w-2xl mx-auto">
               <TabsTrigger value="all" className="flex items-center gap-2">
                 <Music className="h-4 w-4" />
-                Todos ({mockTracks.length})
+                Todos ({tracks.length})
               </TabsTrigger>
               <TabsTrigger value="beats" className="flex items-center gap-2">
                 <Music className="h-4 w-4" />
@@ -43,7 +46,7 @@ export default function CatalogPage() {
             </TabsList>
 
             <TabsContent value="all">
-              <TrackGrid tracks={mockTracks} />
+              <TrackGrid tracks={tracks} />
             </TabsContent>
 
             <TabsContent value="beats">

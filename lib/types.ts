@@ -7,10 +7,14 @@ export interface Track {
   key?: string
   price: number
   description?: string
+  tags?: string[]
   is_featured: boolean
+  exclusive?: boolean
+  license?: "basic" | "premium" | "exclusive"
   category: "beat" | "sample" | "midi"
   cover_image_url?: string
   audio_url?: string
+  duration?: number
   created_at?: string
 }
 

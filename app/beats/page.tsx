@@ -1,10 +1,13 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { TrackGrid } from "@/components/track-grid"
-import { mockTracks } from "@/lib/mock-data"
+import { useTracksStore } from "@/lib/tracks-store"
+
+"use client"
 
 export default function BeatsPage() {
-  const beats = mockTracks.filter(track => track.category === "beat")
+  const { getTracksByCategory } = useTracksStore()
+  const beats = getTracksByCategory("beat")
 
   return (
     <div className="min-h-screen">

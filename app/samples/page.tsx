@@ -6,7 +6,7 @@ import { Footer } from "@/components/footer"
 import { TrackFilters, type FilterState } from "@/components/track-filters"
 import { TrackCard } from "@/components/track-card"
 import { AudioPlayer } from "@/components/audio-player"
-import { mockTracks } from "@/lib/mock-data"
+import { useTracksStore } from "@/lib/tracks-store"
 import type { Track } from "@/lib/types"
 import { Music2, AudioWaveform as Waveform } from "lucide-react"
 
@@ -20,10 +20,12 @@ export default function SamplesPage() {
   })
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
 
+  const { getTracksByCategory } = useTracksStore()
+  
   // Filter only samples
   const sampleTracks = useMemo(() => {
-    return mockTracks.filter((track) => track.category === "sample")
-  }, [])
+    return getTracksByCategory("sample")
+  }, [getTracksByCategory])
 
   const filteredTracks = useMemo(() => {
     let tracks = [...sampleTracks]

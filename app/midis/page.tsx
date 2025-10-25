@@ -1,10 +1,13 @@
+"use client"
+
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { TrackGrid } from "@/components/track-grid"
-import { mockTracks } from "@/lib/mock-data"
+import { useTracksStore } from "@/lib/tracks-store"
 
 export default function MidisPage() {
-  const midis = mockTracks.filter(track => track.category === "midi")
+  const { getTracksByCategory } = useTracksStore()
+  const midis = getTracksByCategory("midi")
 
   return (
     <div className="min-h-screen">

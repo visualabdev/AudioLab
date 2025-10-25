@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Header } from "@/components/header"
+import { DynamicHero, DynamicContact } from "@/components/dynamic-content"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,10 +32,7 @@ export default function ContactoPage() {
       <main className="pt-32 pb-16">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
-            <h1 className="text-5xl font-black mb-4 animate-gradient-text">Contacto</h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              ¿Tienes alguna pregunta o necesitas ayuda? Estamos aquí para ayudarte
-            </p>
+            <DynamicHero pageId="contact" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">

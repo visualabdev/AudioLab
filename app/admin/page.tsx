@@ -13,7 +13,8 @@ import { DynamicLogo } from '@/components/dynamic-logo'
 import { AdminTracksTab } from '@/components/admin/tracks-tab'
 import { AdminPurchasesTab } from '@/components/admin/purchases-tab'
 import { AdminAnalyticsTab } from '@/components/admin/analytics-tab'
-import { Save, RotateCcw, Upload, BarChart3, Music, ShoppingCart, Settings, Palette, ArrowLeft } from 'lucide-react'
+import { AdminContentTab } from '@/components/admin/content-tab'
+import { Save, RotateCcw, Upload, BarChart3, Music, ShoppingCart, Settings, Palette, ArrowLeft, FileText } from 'lucide-react'
 import Link from 'next/link'
 
 const iconOptions = [
@@ -115,6 +116,7 @@ export default function AdminPage() {
     { id: 'samples', label: 'Samples', icon: Music },
     { id: 'midis', label: 'MIDIs', icon: Music },
     { id: 'purchases', label: 'Compras', icon: ShoppingCart },
+    { id: 'content', label: 'Contenido', icon: FileText },
     { id: 'customization', label: 'Personalización', icon: Palette }
   ]
 
@@ -130,6 +132,8 @@ export default function AdminPage() {
         return <AdminTracksTab category="midi" />
       case 'purchases':
         return <AdminPurchasesTab />
+      case 'content':
+        return <AdminContentTab />
       case 'customization':
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -391,7 +395,7 @@ export default function AdminPage() {
 
         {/* Modern Card Navigation */}
         <div className="mb-12">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
             {tabs.map((tab) => {
               const Icon = tab.icon
               const isActive = activeTab === tab.id
@@ -400,15 +404,15 @@ export default function AdminPage() {
                 <Card
                   key={tab.id}
                   className={`cursor-pointer transition-all duration-300 hover:scale-105 group ${isActive
-                      ? 'glass-card border-primary/50 shadow-2xl shadow-primary/20 bg-gradient-to-br from-primary/10 to-secondary/10'
-                      : 'glass border-border/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10'
+                    ? 'glass-card border-primary/50 shadow-2xl shadow-primary/20 bg-gradient-to-br from-primary/10 to-secondary/10'
+                    : 'glass border-border/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10'
                     }`}
                   onClick={() => setActiveTab(tab.id)}
                 >
                   <CardContent className="p-6 text-center space-y-3">
                     <div className={`w-12 h-12 mx-auto rounded-xl flex items-center justify-center transition-all duration-300 ${isActive
-                        ? 'bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/30'
-                        : 'bg-muted group-hover:bg-gradient-to-br group-hover:from-primary/20 group-hover:to-secondary/20'
+                      ? 'bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/30'
+                      : 'bg-muted group-hover:bg-gradient-to-br group-hover:from-primary/20 group-hover:to-secondary/20'
                       }`}>
                       <Icon className={`h-6 w-6 transition-colors ${isActive ? 'text-white' : 'text-muted-foreground group-hover:text-primary'
                         }`} />

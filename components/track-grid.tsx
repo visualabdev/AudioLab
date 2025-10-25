@@ -8,6 +8,7 @@ import { Play, Pause, ShoppingCart, Music, DollarSign } from "lucide-react"
 import { useCartStore } from "@/lib/cart-store"
 import Image from "next/image"
 import type { Track } from "@/lib/types"
+import { useTracksStore } from "@/lib/tracks-store"
 
 interface TrackGridProps {
   tracks: Track[]

@@ -6,10 +6,11 @@ import { Badge } from "@/components/ui/badge"
 import { Play, ShoppingCart, Clock, Music, TrendingUp, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { mockTracks } from "@/lib/mock-data"
+import { useTracksStore } from "@/lib/tracks-store"
 
 export function FeaturedTracks() {
-  const featuredTracks = mockTracks.filter((track) => track.is_featured)
+  const { getFeaturedTracks } = useTracksStore()
+  const featuredTracks = getFeaturedTracks()
 
   const formatDuration = (seconds: number | null) => {
     if (!seconds) return "0:00"
