@@ -282,3 +282,27 @@ iframe[src*="spline.design"]::after {
   background: #0d0d0d;
   z-index: 1000;
 }
+
+/* Global player spacing */
+body {
+  padding-bottom: 80px; /* Space for global player */
+}
+
+/* Ensure content doesn't overlap with player */
+.main-content {
+  min-height: calc(100vh - 80px);
+}
+
+/* Player animations */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.player-slide-up {
+  animation: slideUp 0.3s ease-out;
+}

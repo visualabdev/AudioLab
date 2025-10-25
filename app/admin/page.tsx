@@ -12,7 +12,7 @@ import { ColorPicker } from '@/components/ui/color-picker'
 import { DynamicLogo } from '@/components/dynamic-logo'
 import { AdminTracksTab } from '@/components/admin/tracks-tab'
 import { AdminPurchasesTab } from '@/components/admin/purchases-tab'
-import { AdminAnalyticsTab } from '@/components/admin/analytics-tab'
+import { AnalyticsTab } from '@/components/admin/analytics-tab'
 import { AdminContentTab } from '@/components/admin/content-tab'
 import { Save, RotateCcw, Upload, BarChart3, Music, ShoppingCart, Settings, Palette, ArrowLeft, FileText } from 'lucide-react'
 import Link from 'next/link'
@@ -123,7 +123,7 @@ export default function AdminPage() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'analytics':
-        return <AdminAnalyticsTab />
+        return <AnalyticsTab />
       case 'beats':
         return <AdminTracksTab category="beat" />
       case 'samples':

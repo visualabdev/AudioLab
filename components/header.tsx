@@ -5,6 +5,10 @@ import { Menu } from "lucide-react"
 import { CartSheet } from "@/components/cart-sheet"
 import { Button } from "@/components/ui/button"
 import { DynamicLogo } from "@/components/dynamic-logo"
+import { ShoppingCart } from "@/components/shopping-cart"
+import { UserMenu } from "@/components/auth/user-menu"
+import { LoginDialog } from "@/components/auth/login-dialog"
+import { SignupDialog } from "@/components/auth/signup-dialog"
 import { useState } from "react"
 
 export function Header() {
@@ -60,7 +64,8 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-3 md:absolute md:right-4">
-            <CartSheet />
+            <ShoppingCart />
+            <UserMenu />
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               <Menu className="h-5 w-5" />
             </Button>
@@ -110,6 +115,10 @@ export function Header() {
           </nav>
         </div>
       )}
+
+      {/* Auth Dialogs */}
+      <LoginDialog />
+      <SignupDialog />
     </header>
   )
 }

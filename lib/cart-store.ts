@@ -1,53 +1,109 @@
-"use client"
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
-import type { Track } from "./types"
-
-interface CartItem {
-  track: Track
+export interface CartItem {
+  id: string
+  title: string
+  artist: string
+  price: number
+  category: 'beats' | 'samples' | 'midis'
+  image?: string
+  license: 'basic' | 'premium' | 'exclusive'
   quantity: number
 }
 
-interface CartStore {
+export interface CartStore {
   items: CartItem[]
-  addItem: (track: Track) => void
-  removeItem: (trackId: string) => void
+  isOpen: boolean
+  
+  // Actions
+  addItem: (item: Omit<CartItem, 'quantity'>) => void
+  removeItem: (id: string) => void
+  updateQuantity: (id: string, quantity: number) => void
   clearCart: () => void
+  toggleCart: () => void
+  setCartOpen: (open: boolean) => void
+  
+  // Computed
+  getTotalItems: () => number
   getTotalPrice: () => number
-  getItemCount: () => number
+  getItemCount: (id: string) => number
 }
 
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
-      addItem: (track) => {
+      isOpen: false,
+
+      addItem: (newItem) => {
         const items = get().items
-        const existingItem = items.find((item) => item.track.id === track.id)
+        const existingItem = items.find(item => 
+          item.id === newItem.id && item.license === newItem.license
+        )
 
         if (existingItem) {
-          // Track already in cart, don't add again
+          set({
+            items: items.map(item =>
+              item.id === newItem.id && item.license === newItem.license
+                ? { ...item, quantity: item.quantity + 1 }
+                : item
+            )
+          })
+        } else {
+          set({
+            items: [...items, { ...newItem, quantity: 1 }]
+          })
+        }
+      },
+
+      removeItem: (id) => {
+        set({
+          items: get().items.filter(item => item.id !== id)
+        })
+      },
+
+      updateQuantity: (id, quantity) => {
+        if (quantity <= 0) {
+          get().removeItem(id)
           return
         }
 
-        set({ items: [...items, { track, quantity: 1 }] })
+        set({
+          items: get().items.map(item =>
+            item.id === id ? { ...item, quantity } : item
+          )
+        })
       },
-      removeItem: (trackId) => {
-        set({ items: get().items.filter((item) => item.track.id !== trackId) })
-      },
+
       clearCart: () => {
         set({ items: [] })
       },
-      getTotalPrice: () => {
-        return get().items.reduce((total, item) => total + item.track.price * item.quantity, 0)
+
+      toggleCart: () => {
+        set({ isOpen: !get().isOpen })
       },
-      getItemCount: () => {
+
+      setCartOpen: (open) => {
+        set({ isOpen: open })
+      },
+
+      getTotalItems: () => {
         return get().items.reduce((total, item) => total + item.quantity, 0)
       },
+
+      getTotalPrice: () => {
+        return get().items.reduce((total, item) => total + (item.price * item.quantity), 0)
+      },
+
+      getItemCount: (id) => {
+        const item = get().items.find(item => item.id === id)
+        return item ? item.quantity : 0
+      }
     }),
     {
-      name: "audiolab-cart",
-    },
-  ),
+      name: 'cart-storage',
+      partialize: (state) => ({ items: state.items })
+    }
+  )
 )

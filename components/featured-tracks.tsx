@@ -3,13 +3,18 @@
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Play, ShoppingCart, Clock, Music, TrendingUp, ArrowRight } from "lucide-react"
+import { Play, Pause, ShoppingCart, Clock, Music, TrendingUp, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useTracksStore } from "@/lib/tracks-store"
+import { useCartStore } from "@/lib/cart-store"
+import { usePlayerStore } from "@/lib/player-store"
+import { toast } from "@/lib/toast"
 
 export function FeaturedTracks() {
   const { getFeaturedTracks } = useTracksStore()
+  const { addItem } = useCartStore()
+  const { currentTrack, isPlaying, playTrack, pauseTrack } = usePlayerStore()
   const featuredTracks = getFeaturedTracks()
 
   const formatDuration = (seconds: number | null) => {
@@ -17,6 +22,33 @@ export function FeaturedTracks() {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, "0")}`
+  }
+
+  const handlePlay = (track: any) => {
+    if (currentTrack?.id === track.id && isPlaying) {
+      pauseTrack()
+      toast.info(`Pausado: ${track.title}`)
+    } else {
+      playTrack(track)
+      toast.success(`Reproduciendo: ${track.title}`)
+    }
+  }
+
+  const handleAddToCart = (track: any, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    addItem({
+      id: track.id,
+      title: track.title,
+      artist: track.artist,
+      price: track.price,
+      category: track.category as 'beats' | 'samples' | 'midis',
+      image: track.cover_image_url,
+      license: 'basic'
+    })
+    
+    toast.success(`${track.title} agregado al carrito`)
   }
 
   return (
@@ -50,7 +82,6 @@ export function FeaturedTracks() {
                 animation: `fadeInUp 0.6s ease-out ${index * 0.15}s both`,
               }}
             >
-              <Link href={`/track/${track.id}`}>
                 <div className="relative aspect-square overflow-hidden">
                   <Image
                     src={track.cover_image_url || ""}
@@ -65,8 +96,17 @@ export function FeaturedTracks() {
                     <Button
                       size="icon"
                       className="h-20 w-20 rounded-full bg-gradient-to-br from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-2xl shadow-primary/50 animate-pulse-glow"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handlePlay(track)
+                      }}
                     >
-                      <Play className="h-10 w-10 fill-white" />
+                      {currentTrack?.id === track.id && isPlaying ? (
+                        <Pause className="h-10 w-10 fill-white" />
+                      ) : (
+                        <Play className="h-10 w-10 fill-white" />
+                      )}
                     </Button>
                   </div>
 
@@ -114,14 +154,13 @@ export function FeaturedTracks() {
                     </div>
                     <Button
                       className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-lg shadow-primary/30 font-semibold"
-                      onClick={(e) => e.preventDefault()}
+                      onClick={(e) => handleAddToCart(track, e)}
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
                       Agregar
                     </Button>
                   </div>
                 </div>
-              </Link>
             </Card>
           ))}
         </div>

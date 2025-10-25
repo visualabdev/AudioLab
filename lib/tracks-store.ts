@@ -7,6 +7,7 @@ interface TracksStore {
   addTrack: (track: Omit<Track, 'id' | 'created_at'>) => void
   updateTrack: (id: string, track: Partial<Track>) => void
   deleteTrack: (id: string) => void
+  getTrackById: (id: string) => Track | undefined
   getTracksByCategory: (category: 'beat' | 'sample' | 'midi') => Track[]
   getFeaturedTracks: () => Track[]
   resetTracks: () => void
@@ -26,7 +27,7 @@ const initialTracks: Track[] = [
     is_featured: true,
     category: "beat",
     cover_image_url: "/placeholder.svg",
-    audio_url: "/audio/midnight-dreams.mp3",
+    audio_url: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
     created_at: "2025-01-20"
   },
   {
@@ -41,7 +42,7 @@ const initialTracks: Track[] = [
     is_featured: true,
     category: "beat",
     cover_image_url: "/placeholder.svg",
-    audio_url: "/audio/summer-vibes.mp3",
+    audio_url: "https://www.soundjay.com/misc/sounds/fail-buzzer-02.wav",
     created_at: "2025-01-19"
   },
   {
@@ -56,7 +57,7 @@ const initialTracks: Track[] = [
     is_featured: false,
     category: "beat",
     cover_image_url: "/placeholder.svg",
-    audio_url: "/audio/electronic-dreams.mp3",
+    audio_url: "https://www.soundjay.com/misc/sounds/success-fanfare-trumpets.wav",
     created_at: "2025-01-18"
   },
   {
@@ -239,6 +240,10 @@ export const useTracksStore = create<TracksStore>()(
         set((state) => ({
           tracks: state.tracks.filter(track => track.id !== id)
         }))
+      },
+      
+      getTrackById: (id) => {
+        return get().tracks.find(track => track.id === id)
       },
       
       getTracksByCategory: (category) => {

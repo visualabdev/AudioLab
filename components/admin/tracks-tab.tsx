@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Plus, Edit, Trash2, Music, DollarSign, Upload, Save, Play, Pause } from "lucide-react"
 import { useTracksStore } from "@/lib/tracks-store"
+import { BulkOperations } from "@/components/admin/bulk-operations"
 import Image from "next/image"
 import type { Track } from "@/lib/types"
 
@@ -172,13 +173,15 @@ export function AdminTracksTab({ category }: AdminTracksTabProps) {
             {category === "midi" && "Archivos MIDI para melodías, acordes y patrones"}
           </p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className={`bg-gradient-to-r ${getCategoryColor()} hover:opacity-90 text-white border-0`}>
-              <Plus className="h-4 w-4 mr-2" />
-              Agregar {getCategoryName().slice(0, -1)}
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center space-x-3">
+          <BulkOperations />
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className={`bg-gradient-to-r ${getCategoryColor()} hover:opacity-90 text-white border-0`}>
+                <Plus className="h-4 w-4 mr-2" />
+                Agregar {getCategoryName().slice(0, -1)}
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-2xl">
@@ -486,6 +489,7 @@ export function AdminTracksTab({ category }: AdminTracksTabProps) {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Tracks List */}

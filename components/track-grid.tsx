@@ -1,35 +1,46 @@
 "use client"
 
-import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Play, Pause, ShoppingCart, Music, DollarSign } from "lucide-react"
+import { Play, Pause, ShoppingCart, Music, DollarSign, Heart } from "lucide-react"
 import { useCartStore } from "@/lib/cart-store"
+import { usePlayerStore } from "@/lib/player-store"
 import Image from "next/image"
 import type { Track } from "@/lib/types"
-import { useTracksStore } from "@/lib/tracks-store"
+import { toast } from "@/lib/toast"
 
 interface TrackGridProps {
   tracks: Track[]
 }
 
 export function TrackGrid({ tracks }: TrackGridProps) {
-  const [playingTrack, setPlayingTrack] = useState<string | null>(null)
   const { addItem } = useCartStore()
+  const { currentTrack, isPlaying, playTrack, pauseTrack } = usePlayerStore()
 
-  const handlePlay = (trackId: string) => {
-    if (playingTrack === trackId) {
-      setPlayingTrack(null)
+  const handlePlay = (track: Track) => {
+    if (currentTrack?.id === track.id && isPlaying) {
+      pauseTrack()
     } else {
-      setPlayingTrack(trackId)
-      // Aquí iría la lógica real de reproducción de audio
-      setTimeout(() => setPlayingTrack(null), 30000) // Auto-stop después de 30s
+      playTrack(track)
     }
   }
 
   const handleAddToCart = (track: Track) => {
-    addItem(track)
+    addItem({
+      id: track.id,
+      title: track.title,
+      artist: track.artist,
+      price: track.price,
+      category: track.category as 'beats' | 'samples' | 'midis',
+      image: track.cover_image_url,
+      license: 'basic'
+    })
+    toast.success(`${track.title} agregado al carrito`)
+  }
+
+  const handleFavorite = (track: Track) => {
+    toast.success(`${track.title} agregado a favoritos`)
   }
 
   const getCategoryColor = (category: string) => {
@@ -89,9 +100,9 @@ export function TrackGrid({ tracks }: TrackGridProps) {
                 <Button
                   size="icon"
                   className={`w-16 h-16 rounded-full bg-gradient-to-r ${getCategoryColor(track.category)} hover:scale-110 transition-transform shadow-lg`}
-                  onClick={() => handlePlay(track.id)}
+                  onClick={() => handlePlay(track)}
                 >
-                  {playingTrack === track.id ? (
+                  {currentTrack?.id === track.id && isPlaying ? (
                     <Pause className="h-8 w-8 text-white" />
                   ) : (
                     <Play className="h-8 w-8 text-white ml-1" />
@@ -148,21 +159,33 @@ export function TrackGrid({ tracks }: TrackGridProps) {
                 </p>
               )}
 
-              {/* Price and Add to Cart */}
+
+
+              {/* Actions */}
               <div className="flex items-center justify-between pt-2">
                 <div className="flex items-center gap-1">
                   <DollarSign className="h-4 w-4 text-primary" />
                   <span className="text-xl font-bold text-primary">
-                    {track.price.toFixed(2)}
+                    ${track.price.toFixed(2)}
                   </span>
                 </div>
-                <Button
-                  onClick={() => handleAddToCart(track)}
-                  className={`bg-gradient-to-r ${getCategoryColor(track.category)} hover:opacity-90 text-white border-0`}
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Agregar
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleFavorite(track)}
+                    className="text-muted-foreground hover:text-red-500"
+                  >
+                    <Heart className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    onClick={() => handleAddToCart(track)}
+                    className={`bg-gradient-to-r ${getCategoryColor(track.category)} hover:opacity-90 text-white border-0`}
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Agregar
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>
