@@ -3,53 +3,32 @@ export interface Track {
   title: string
   artist: string
   genre: string
-  category?: "beat" | "sample" | "midi"
-  bpm: number | null
-  key: string | null
+  bpm?: number
+  key?: string
   price: number
-  description: string | null
-  audio_url: string
-  cover_image_url: string | null
-  duration: number | null
-  tags: string[] | null
+  description?: string
   is_featured: boolean
-  created_at: string
-  updated_at: string
+  category: "beat" | "sample" | "midi"
+  cover_image_url?: string
+  audio_url?: string
+  created_at?: string
+}
+
+export interface Stem {
+  id: string
+  track_id: string
+  name: string
+  type: "drums" | "bass" | "melody" | "vocals" | "other"
+  audio_url: string
 }
 
 export interface Purchase {
   id: string
   track_id: string
   buyer_email: string
-  buyer_name: string | null
+  buyer_name: string
   amount: number
-  paypal_transaction_id: string | null
-  status: "pending" | "completed" | "failed"
-  download_count: number
+  status: "completed" | "pending" | "failed"
+  transaction_id: string
   created_at: string
-}
-
-export interface AdminUser {
-  id: string
-  email: string
-  name: string | null
-  created_at: string
-}
-
-export interface TrackWithPurchaseCount extends Track {
-  purchase_count?: number
-}
-
-export interface Stem {
-  id: string
-  track_id: string | null
-  original_filename: string
-  vocals_url: string | null
-  drums_url: string | null
-  bass_url: string | null
-  other_url: string | null
-  status: "processing" | "completed" | "failed"
-  error_message: string | null
-  created_at: string
-  updated_at: string
 }

@@ -19,7 +19,7 @@ export function HeroSection() {
   }, [])
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-32">
       <div className="absolute inset-0 w-full h-full">
         <iframe
           src="https://my.spline.design/blobs-VwWw1Ss59p4zyTan5CboFSJA/"
@@ -28,6 +28,8 @@ export function HeroSection() {
           height="100%"
           className="spline-embed"
         />
+        {/* Overlay to hide Spline watermark */}
+        <div className="absolute bottom-0 right-0 w-40 h-20 bg-black z-10" />
       </div>
 
       {/* Dark overlay to ensure text readability */}

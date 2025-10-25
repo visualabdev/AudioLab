@@ -114,8 +114,14 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
+        <div className="border-t border-border mt-8 pt-8 flex flex-col sm:flex-row items-center justify-between text-sm text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} AudioLab. All rights reserved.</p>
+          <Link 
+            href="/admin" 
+            className="mt-2 sm:mt-0 text-xs text-muted-foreground hover:text-primary transition-colors opacity-50 hover:opacity-100"
+          >
+            Panel de Administración
+          </Link>
         </div>
       </div>
     </footer>

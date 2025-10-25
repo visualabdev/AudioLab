@@ -255,7 +255,8 @@ body {
 
 /* Hide Spline logo watermark */
 .spline-embed {
-  pointer-events: auto;
+  pointer-events: none;
+  position: relative;
 }
 
 .spline-embed::after {
@@ -263,13 +264,21 @@ body {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 120px;
-  height: 60px;
-  background: #0d0d0d;
-  z-index: 10;
+  width: 150px;
+  height: 80px;
+  background: linear-gradient(45deg, #0d0d0d 0%, #0d0d0d 100%);
+  z-index: 1000;
+  pointer-events: none;
 }
 
-/* Alternative method to hide Spline watermark */
-iframe.spline-embed {
-  position: relative;
+/* Hide Spline watermark with CSS */
+iframe[src*="spline.design"]::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 150px;
+  height: 80px;
+  background: #0d0d0d;
+  z-index: 1000;
 }
