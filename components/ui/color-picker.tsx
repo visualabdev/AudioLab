@@ -50,10 +50,20 @@ export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
     
     // If it's an oklch color, try to extract a reasonable hex approximation
     if (color.includes('oklch')) {
-      // This is a simplified conversion - in a real app you'd want a proper color conversion library
-      if (color.includes('286.75')) return '#8b5cf6' // Purple
-      if (color.includes('197.137')) return '#06b6d4' // Cyan
-      return '#8b5cf6' // Default to purple
+      // Mapeo inverso de OKLCH a hex para la visualización
+      const oklchToHex: { [key: string]: string } = {
+        'oklch(0.646 0.222 286.75)': '#8b5cf6', // Purple
+        'oklch(0.696 0.17 197.137)': '#06b6d4',  // Cyan
+        'oklch(0.6 0.25 240)': '#3b82f6',        // Blue
+        'oklch(0.7 0.2 150)': '#10b981',         // Green
+        'oklch(0.6 0.25 20)': '#ef4444',         // Red
+        'oklch(0.7 0.2 60)': '#f97316',          // Orange
+        'oklch(0.65 0.25 320)': '#ec4899',       // Pink
+        'oklch(0.7 0.2 280)': '#a855f7',         // Violet
+        'oklch(0.6 0.2 180)': '#14b8a6'          // Teal
+      }
+      
+      return oklchToHex[color] || '#8b5cf6' // Default to purple
     }
     
     return color

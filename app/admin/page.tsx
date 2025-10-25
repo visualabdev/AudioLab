@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useConfigStore } from '@/lib/config-store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,7 +13,8 @@ import { DynamicLogo } from '@/components/dynamic-logo'
 import { AdminTracksTab } from '@/components/admin/tracks-tab'
 import { AdminPurchasesTab } from '@/components/admin/purchases-tab'
 import { AdminAnalyticsTab } from '@/components/admin/analytics-tab'
-import { Save, RotateCcw, Upload, BarChart3, Music, ShoppingCart, Settings, Palette } from 'lucide-react'
+import { Save, RotateCcw, Upload, BarChart3, Music, ShoppingCart, Settings, Palette, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 
 const iconOptions = [
   { value: 'Music2', label: 'Music Note' },
@@ -37,8 +38,15 @@ export default function AdminPage() {
   const [tempConfig, setTempConfig] = useState(config)
   const [activeTab, setActiveTab] = useState('analytics')
 
+  // Sincronizar tempConfig con config cuando cambie
+  useEffect(() => {
+    setTempConfig(config)
+  }, [config])
+
   const handleSave = () => {
     updateConfig(tempConfig)
+    // Forzar actualización del estado local
+    setTempConfig({ ...tempConfig })
     alert('Configuración guardada exitosamente!')
   }
 
@@ -75,6 +83,10 @@ export default function AdminPage() {
   }
 
   const convertHexToOklch = (hex: string): string => {
+    // Si ya es un valor OKLCH, devolverlo tal como está
+    if (hex.includes('oklch')) return hex
+
+    // Mapeo de colores hex comunes a OKLCH
     const colorMap: { [key: string]: string } = {
       '#8b5cf6': 'oklch(0.646 0.222 286.75)',
       '#06b6d4': 'oklch(0.696 0.17 197.137)',
@@ -86,7 +98,15 @@ export default function AdminPage() {
       '#a855f7': 'oklch(0.7 0.2 280)',
       '#14b8a6': 'oklch(0.6 0.2 180)'
     }
-    return colorMap[hex] || hex
+
+    // Si existe en el mapeo, usar el valor OKLCH
+    if (colorMap[hex]) {
+      return colorMap[hex]
+    }
+
+    // Para otros colores hex, usar el valor hex directamente
+    // El CSS moderno soporta hex en custom properties
+    return hex
   }
 
   const tabs = [
@@ -114,32 +134,43 @@ export default function AdminPage() {
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Preview */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
+            <Card className="glass-card border-primary/20 shadow-xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20">
+                    <Settings className="h-5 w-5 text-primary" />
+                  </div>
                   Vista Previa
                 </CardTitle>
-                <CardDescription>Así se verá tu logo con la configuración actual</CardDescription>
+                <CardDescription className="text-base">Así se verá tu logo con la configuración actual</CardDescription>
               </CardHeader>
-              <CardContent className="flex items-center justify-center p-8">
-                <DynamicLogo />
+              <CardContent className="flex items-center justify-center p-12 bg-gradient-to-br from-muted/30 to-transparent rounded-lg">
+                <div className="p-8 rounded-2xl glass border border-primary/10">
+                  <DynamicLogo />
+                </div>
               </CardContent>
             </Card>
 
             {/* Configuration */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Palette className="h-5 w-5" />
+            <Card className="glass-card border-primary/20 shadow-xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20">
+                    <Palette className="h-5 w-5 text-primary" />
+                  </div>
                   Configuración
                 </CardTitle>
-                <CardDescription>Personaliza el logo y los colores de tu sitio</CardDescription>
+                <CardDescription className="text-base">Personaliza el logo y los colores de tu sitio</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-8">
                 {/* Logo Configuration */}
-                <div className="space-y-4">
-                  <h4 className="font-medium text-lg">Configuración del Logo</h4>
+                <div className="space-y-6 p-6 rounded-xl glass border border-primary/10">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20">
+                      <Settings className="h-5 w-5 text-blue-500" />
+                    </div>
+                    <h4 className="font-semibold text-xl">Configuración del Logo</h4>
+                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="logo-text">Texto del Logo</Label>
@@ -150,6 +181,8 @@ export default function AdminPage() {
                         ...tempConfig,
                         logo: { ...tempConfig.logo, text: e.target.value }
                       })}
+                      disabled={tempConfig.logo.type === 'image'}
+                      placeholder={tempConfig.logo.type === 'image' ? 'No se usa con imagen personalizada' : 'Nombre de tu marca'}
                     />
                   </div>
 
@@ -162,6 +195,8 @@ export default function AdminPage() {
                         ...tempConfig,
                         logo: { ...tempConfig.logo, subtitle: e.target.value }
                       })}
+                      disabled={tempConfig.logo.type === 'image'}
+                      placeholder={tempConfig.logo.type === 'image' ? 'No se usa con imagen personalizada' : 'Descripción corta'}
                     />
                   </div>
 
@@ -178,11 +213,20 @@ export default function AdminPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="icon">Icono</SelectItem>
-                        <SelectItem value="image">Imagen Personalizada</SelectItem>
+                        <SelectItem value="icon">Icono + Texto</SelectItem>
+                        <SelectItem value="image">Imagen Completa (reemplaza todo)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {tempConfig.logo.type === 'image' && (
+                    <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                        <strong>Nota:</strong> La imagen personalizada reemplazará completamente el logo (icono + texto).
+                        Se recomienda usar una imagen horizontal con fondo transparente.
+                      </p>
+                    </div>
+                  )}
 
                   {tempConfig.logo.type === 'icon' && (
                     <div className="space-y-2">
@@ -237,8 +281,13 @@ export default function AdminPage() {
                 </div>
 
                 {/* Color Configuration */}
-                <div className="space-y-4 border-t pt-6">
-                  <h4 className="font-medium text-lg">Configuración de Colores</h4>
+                <div className="space-y-6 p-6 rounded-xl glass border border-primary/10">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-pink-500/20 to-orange-500/20">
+                      <Palette className="h-5 w-5 text-pink-500" />
+                    </div>
+                    <h4 className="font-semibold text-xl">Configuración de Colores</h4>
+                  </div>
 
                   <div className="space-y-4">
                     <h5 className="font-medium">Presets de Colores</h5>
@@ -287,13 +336,22 @@ export default function AdminPage() {
                   />
                 </div>
 
-                <div className="flex gap-2 mt-6">
-                  <Button onClick={handleSave} className="flex-1">
-                    <Save className="w-4 h-4 mr-2" />
+                <div className="flex gap-4 mt-8 p-6 rounded-xl glass border border-primary/10">
+                  <Button
+                    onClick={handleSave}
+                    className="flex-1 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all duration-300"
+                    size="lg"
+                  >
+                    <Save className="w-5 h-5 mr-2" />
                     Guardar Cambios
                   </Button>
-                  <Button onClick={handleReset} variant="outline">
-                    <RotateCcw className="w-4 h-4 mr-2" />
+                  <Button
+                    onClick={handleReset}
+                    variant="outline"
+                    className="border-2 border-muted-foreground/20 hover:bg-muted/50"
+                    size="lg"
+                  >
+                    <RotateCcw className="w-5 h-5 mr-2" />
                     Restablecer
                   </Button>
                 </div>
@@ -307,38 +365,70 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-32 pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 pt-32 pb-16">
       <div className="container mx-auto px-4 max-w-7xl">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">Panel de Administración</h1>
-          <p className="text-muted-foreground">Gestiona tu tienda de beats y personaliza tu sitio</p>
+        {/* Header with Back Button */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="glass border-primary/20 hover:bg-primary/10"
+            >
+              <Link href="/" className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Volver al Inicio
+              </Link>
+            </Button>
+          </div>
+          <div className="text-center flex-1">
+            <h1 className="text-5xl font-black mb-2 animate-gradient-text">Panel de Administración</h1>
+            <p className="text-muted-foreground text-lg">Gestiona tu tienda de beats y personaliza tu sitio</p>
+          </div>
+          <div className="w-32"></div> {/* Spacer for centering */}
         </div>
 
-        {/* Custom Tab Navigation */}
-        <div className="mb-8">
-          <div className="flex flex-wrap gap-2 p-1 bg-muted rounded-lg">
+        {/* Modern Card Navigation */}
+        <div className="mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {tabs.map((tab) => {
               const Icon = tab.icon
+              const isActive = activeTab === tab.id
+
               return (
-                <button
+                <Card
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === tab.id
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
+                  className={`cursor-pointer transition-all duration-300 hover:scale-105 group ${isActive
+                      ? 'glass-card border-primary/50 shadow-2xl shadow-primary/20 bg-gradient-to-br from-primary/10 to-secondary/10'
+                      : 'glass border-border/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10'
                     }`}
+                  onClick={() => setActiveTab(tab.id)}
                 >
-                  <Icon className="h-4 w-4" />
-                  {tab.label}
-                </button>
+                  <CardContent className="p-6 text-center space-y-3">
+                    <div className={`w-12 h-12 mx-auto rounded-xl flex items-center justify-center transition-all duration-300 ${isActive
+                        ? 'bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/30'
+                        : 'bg-muted group-hover:bg-gradient-to-br group-hover:from-primary/20 group-hover:to-secondary/20'
+                      }`}>
+                      <Icon className={`h-6 w-6 transition-colors ${isActive ? 'text-white' : 'text-muted-foreground group-hover:text-primary'
+                        }`} />
+                    </div>
+                    <h3 className={`font-semibold text-sm transition-colors ${isActive ? 'text-primary' : 'text-foreground group-hover:text-primary'
+                      }`}>
+                      {tab.label}
+                    </h3>
+                  </CardContent>
+                </Card>
               )
             })}
           </div>
         </div>
 
-        {/* Tab Content */}
+        {/* Tab Content with Enhanced Styling */}
         <div className="space-y-6">
-          {renderTabContent()}
+          <div className="glass-card p-8 rounded-2xl border border-border/50 shadow-2xl">
+            {renderTabContent()}
+          </div>
         </div>
       </div>
     </div>

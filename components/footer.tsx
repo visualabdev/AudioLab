@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Music2, Mail, Instagram, Twitter, Youtube } from "lucide-react"
+import { Mail, Instagram, Twitter, Youtube } from "lucide-react"
+import { DynamicLogo } from "@/components/dynamic-logo"
 
 export function Footer() {
   return (
@@ -8,11 +9,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2">
-              <Music2 className="h-6 w-6 text-primary" />
-              <span className="text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                AudioLab
-              </span>
+            <Link href="/" className="block">
+              <DynamicLogo className="scale-75 origin-left" />
             </Link>
             <p className="text-sm text-muted-foreground text-balance">
               Premium beats and instrumentals for artists, producers, and content creators worldwide.
